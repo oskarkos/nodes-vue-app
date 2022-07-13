@@ -59,6 +59,7 @@ import {
 import Node1 from "./nodes/node1.vue";
 import Node2 from "./nodes/node2.vue";
 import Node3 from "./nodes/node3.vue";
+import StringNode from "./nodes/StringNode.vue";
 
 export default {
   name: "drawflow",
@@ -85,9 +86,17 @@ export default {
         input: 1,
         output: 0,
       },
+      {
+        name: "String",
+        color: "#c8c81c",
+        item: "StringNode",
+        input: 0,
+        output: 1,
+      },
     ]);
 
     const editor = shallowRef({});
+    const connections = ref([]);
     const dialogVisible = ref(false);
     const dialogData = ref({});
     const Vue = { version: 3, h, render };
@@ -128,6 +137,7 @@ export default {
       } else {
         ev.preventDefault();
         var data = ev.dataTransfer.getData("node");
+        console.log(data);
         addNodeToDrawFlow(data, ev.clientX, ev.clientY);
       }
     };
@@ -158,6 +168,7 @@ export default {
             (editor.value.precanvas.clientHeight * editor.value.zoom));
 
       const nodeSelected = listNodes.find((ele) => ele.item == name);
+      console.log(nodeSelected);
       editor.value.addNode(
         name,
         nodeSelected.input,
@@ -190,6 +201,23 @@ export default {
       editor.value.registerNode("Node1", Node1, {}, {});
       editor.value.registerNode("Node2", Node2, {}, {});
       editor.value.registerNode("Node3", Node3, {}, {});
+      editor.value.registerNode("StringNode", StringNode, {}, {});
+
+      editor.value.on("connectionCreated", function (id) {
+        console.log("conection created ");
+        connections.value.push(id);
+        console.log(connections.value);
+      });
+
+      editor.value.on("connectionRemoved", function (id) {
+        console.log(id);
+        console.log("conection removed ");
+        connections.value = connections.value.filter(
+          (ele) =>
+            ele.output_id != id.output_id && ele.input_id != id.input_id
+        );
+        console.log(connections.value);
+      });
 
       editor.value.import({
         drawflow: {
